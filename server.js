@@ -32,11 +32,11 @@ app.get("/api/notes", function (req, res) {
     if (err) {
       console.log(err);
     }
-    
-    console.log(data);
+
+    //console.log(data);
     notes = JSON.parse(data);
-    console.log(notes);
-    res.json(data);
+    //console.log(notes);
+    res.json(notes);
   });
 });
 
@@ -45,35 +45,50 @@ app.get("/api/notes", function (req, res) {
 app.post("/api/notes", function (req, res) {
   // req.body hosts is equal to the JSON post sent from the user
   // This works because of our body parsing middleware
- 
+
   const newNote = {
     // Creates a unique identifier
     id: uuid.v4(),
     title: req.body.title,
     text: req.body.text
   };
-
-  console.log(newNote);
-  // if(!newNote.title || !newNote.test){
-  //  return res.status(400).json({msg: 'Please include a title and text.'}) 
-  // }
+  //DEBUG
+  //console.log(newNote);
+  if (!newNote.title || !newNote.text) {
+    Console.log("Missing data");
+    return res.status(400).json({ msg: 'Please include a title and text.' })
+  };
 
   notes.push(newNote);
-  console.log(notes);
-  fs.writeFile(path.join(__dirname, 'db', 'db.json'), JSON.stringify(notes),(err) => {
+  //console.log(notes);
+  fs.writeFile(path.join(__dirname, 'db', 'db.json'), JSON.stringify(notes), (err) => {
     if (err) {
       console.log(err);
     }
-    console.log("File written successfully.");
+    console.log("File written successfully. Added: ", newNote);
     res.json(newNote);
   });
 
 });
 
+app.delete("/api/notes/:id", function (req, res) {
+  console.log("Delete invoked",req.params.id);
+  notes.splice(notes.findIndex(note => note.id === req.params.id),1);
+  fs.writeFile(path.join(__dirname, 'db', 'db.json'), JSON.stringify(notes), (err) => {
+    if (err) {
+      console.log(err);
+    }
+    console.log("File written successfully. deleted NoteID: ", req.params.id);
+    res.json(notes);
+  });   
+  
+});
+
+
 // If user types anything note part of existing routes, send to index.html
 app.get("/*", function (req, res) {
 
-  res.sendFile(path.join(__dirname, 'public','index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Starts the server to begin listening
